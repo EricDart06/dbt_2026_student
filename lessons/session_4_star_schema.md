@@ -18,7 +18,7 @@ whole project that builds.
 
 ## Before class
 
-- Pull the latest version of your fork.
+- Get this week's updates: **Sync fork → Update branch** on your fork's GitHub page, then **Pull** in VS Code (Source Control → … → Pull).
 - Your `stg_customers` and `stg_sellers` from session 3 must build:
   `uv run dbt build -s staging`. If not, finish them first: everything this week is
   built on top of them.

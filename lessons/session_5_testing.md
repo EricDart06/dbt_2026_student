@@ -19,7 +19,7 @@ This week is short on new material on purpose: the second half is **buffer** tim
 
 ## Before class
 
-Pull the latest version of your fork, and make sure `uv run dbt build` runs with no
+Get this week's updates (**Sync fork → Update branch** on your fork's GitHub page, then **Pull** in VS Code (Source Control → … → Pull)), and make sure `uv run dbt build` runs with no
 ERROR. If it doesn't, that's what the buffer time is for.
 
 ---

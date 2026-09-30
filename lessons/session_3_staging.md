@@ -17,8 +17,8 @@
 
 ## Before class
 
-Pull the latest version of your fork (VS Code: **Source Control → … → Pull**), then run
-`uv run dbt debug` to make sure you're still connected.
+Get this week's updates: **Sync fork → Update branch** on your fork's GitHub page, then **Pull** in VS Code (Source Control → … → Pull). Then run `uv run dbt debug` to make sure you're still
+connected.
 
 ---
 

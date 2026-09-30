@@ -99,27 +99,34 @@ This creates two files in your `.ssh` folder:
 | File | What it is |
 |---|---|
 | `snowflake_key` | **private** key. Stays on your computer. dbt uses it. |
-| `snowflake_key.pub` | public key |
+| `snowflake_key.pub` | public key, but in the **wrong format** for Snowflake. Don't open it or copy it; step 2b converts it for you. |
 
-### 2b. Print your public key in Snowflake's format
+### 2b. Copy your public key in Snowflake's format
 
-**Windows:**
+This one command converts your public key to the format Snowflake needs **and copies it
+to your clipboard**. You don't need to find or open any file.
+
+**Windows** (PowerShell):
 ```powershell
-ssh-keygen -e -m PKCS8 -f "$HOME\.ssh\snowflake_key.pub"
+ssh-keygen -e -m PKCS8 -f "$HOME\.ssh\snowflake_key.pub" | Set-Clipboard
 ```
 
-**Mac:**
+**Mac** (Terminal):
 ```bash
-ssh-keygen -e -m PKCS8 -f ~/.ssh/snowflake_key.pub
+ssh-keygen -e -m PKCS8 -f ~/.ssh/snowflake_key.pub | pbcopy
 ```
 
-It prints a block like this. Copy **all** of it, including the BEGIN and END lines:
+Nothing prints; that's normal. Now paste it (**Ctrl+V** / **Cmd+V**) into the sign-up
+sheet in Part 3. It should look like this, BEGIN and END lines included:
 ```
 -----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAll3bXsdFW/OL/Qmh0jIf
 ...
 -----END PUBLIC KEY-----
 ```
+
+> ⚠️ **If what you pasted starts with `ssh-rsa AAAA...`**, you copied the `.pub` file
+> itself, which Snowflake can't read. Run the command above again and paste what it copies.
 
 ### 2c. Find your key file (remember how to do this!)
 
@@ -149,7 +156,7 @@ holds `snowflake_key`.
 ## Part 3 — Sign up for Snowflake
 
 1. Fill in the sign-up sheet with your **first name, last name, school email, and public
-   key** (the whole block from step 2b):
+   key** (paste what step 2b copied: the whole `-----BEGIN PUBLIC KEY-----` block):
    <https://webmailbyui-my.sharepoint.com/:x:/g/personal/chazclar_byui_edu/IQBtNtDOQHPRSbpjQPQRiFBIAZMBpJ_56uE69Xjzx4lT4wk?e=8kefPm>
 2. On the sheet, **pick an open animal username**. That animal is your Snowflake
    username. Write it down; you'll need it in Part 5.
@@ -165,8 +172,9 @@ holds `snowflake_key`.
 
 ## Part 4 — Get the project
 
-1. Fork the student repo on GitHub (link coming soon), then clone your fork in VS Code:
-   **Ctrl/Cmd + Shift + P → Git: Clone**.
+1. Go to the student repo, <https://github.com/MLMecham/dbt_2026_student>, and click **Fork** (top right) to make your own
+   copy on GitHub. Then clone **your fork** (`github.com/<your-username>/dbt_2026_student`)
+   in VS Code: **Ctrl/Cmd + Shift + P → Git: Clone**.
 2. Open a terminal in the project folder and install everything:
    ```bash
    uv sync

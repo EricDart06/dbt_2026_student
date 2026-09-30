@@ -65,7 +65,8 @@ shows you what the finished version looks like.
 
 **Full lesson plan: [lessons/session_1_setup.md](lessons/session_1_setup.md)**
 
-Follow **[setup/getting-started.md](setup/getting-started.md)** step by step.
+Follow **[setup/getting-started.md](setup/getting-started.md)** step by step. You'll fork
+the student repo, <https://github.com/MLMecham/dbt_2026_student>, and work in your own copy.
 
 **Goal:** everyone has VS Code, Git, and [uv](https://docs.astral.sh/uv/) installed, has
 made their Snowflake key, and can log in to Snowflake. uv installs Python and dbt for

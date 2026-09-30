@@ -24,7 +24,7 @@ Nothing. Bring a laptop you can install software on (not a locked-down lab machi
 | 10–30 | **Install the tools:** VS Code, Git, connect Git to GitHub, uv, the dbt extension. | [getting-started.md](../setup/getting-started.md) Part 1 |
 | 30–40 | **Make your Snowflake key** and find it in File Explorer / Finder. Write down the full path. | Part 2 |
 | 40–50 | **Sign up:** your name, email, public key, and an animal username on the sign-up sheet. | Part 3 |
-| 50–60 | **Get the project:** fork and clone the student repo, run `uv sync`. | Part 4 |
+| 50–60 | **Get the project:** fork and clone the [student repo](https://github.com/MLMecham/dbt_2026_student), run `uv sync`. | Part 4 |
 
 The Snowflake login itself (Part 3, steps 3–6) only works after the instructor runs the
 setup script, so it may have to wait until after class.
@@ -41,8 +41,11 @@ extension. **Close and reopen your terminal after installing uv**, or `uv` won't
 
 ### 2. Make your key (Part 2)
 Copy the commands exactly: Snowflake needs an RSA key in PKCS8 format. Press Enter twice
-at the passphrase prompt. Then print the public key (step 2b) and keep that window open
-for the sign-up sheet.
+at the passphrase prompt. Then run the step 2b command: it converts your public key and
+**copies it to your clipboard**, ready to paste into the sign-up sheet.
+
+**Don't open or copy `snowflake_key.pub` yourself.** It starts with `ssh-rsa AAAA...`,
+which is the wrong format. What you paste must start with `-----BEGIN PUBLIC KEY-----`.
 
 ✅ You can see `snowflake_key` and `snowflake_key.pub` in your `.ssh` folder, and you've
 written down the full path to `snowflake_key`.
@@ -52,8 +55,8 @@ Paste the **whole** public key block, including the `BEGIN` and `END` lines. Pic
 animal that nobody else has taken; that animal is your Snowflake username.
 
 ### 4. Get the project (Part 4)
-Fork the student repo, clone your fork, open the folder in VS Code, and run `uv sync`
-in the terminal.
+Open <https://github.com/MLMecham/dbt_2026_student> and click **Fork** (top right). Clone
+**your fork**, open the folder in VS Code, and run `uv sync` in the terminal.
 
 ✅ `uv run dbt --version` lists `snowflake` under Plugins.
 
@@ -75,6 +78,7 @@ in the terminal.
 | `uv` not found after installing | Close **every** terminal and open a new one. On Windows, restart VS Code. |
 | `ssh-keygen` not found (Windows) | Run it from Git Bash, or install Git first and reopen PowerShell. |
 | Can't see the `.ssh` folder (Mac) | In Finder, **Cmd + Shift + .** shows hidden files. |
+| What you pasted starts with `ssh-rsa` | You copied the `.pub` file. Run the step 2b command and paste again. |
 | The key has the wrong format | Delete both key files and redo step 2a with the exact command, including `-m PKCS8`. |
 
 ---

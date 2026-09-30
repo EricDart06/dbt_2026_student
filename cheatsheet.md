@@ -75,3 +75,6 @@ git add .                      # stage everything
 git commit -m "Add stg_sellers"
 git push                       # send it to your fork on GitHub
 ```
+
+**Getting each week's updates:** on your fork's GitHub page, click **Sync fork → Update
+branch**, then `git pull` (or **Pull** in VS Code). Commit your own work first.
