@@ -1,0 +1,234 @@
+version: 2
+
+# STAGING (silver): one model per source table, cleaned and renamed.
+# Tests here answer: "is this table what we think it is?"
+#   unique + not_null  -> the grain holds (one row per ___)
+#   accepted_values    -> no surprise categories
+#   relationships      -> every foreign key points at a real row
+
+models:
+  - name: stg_orders
+    description: >
+      **One row is:** an order. Cleaned from `source('olist', 'orders')`: timestamps cast
+      from text and renamed to one convention (`_at` = timestamp, `_date` = date), plus
+      the `is_sale` business rule.
+    columns:
+      - name: order_id
+        description: Unique order id.
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: "{{ doc('customer_id') }}"
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+      - name: order_status
+        description: "{{ doc('order_status') }}"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [created, approved, invoiced, processing, shipped, delivered, canceled, unavailable]
+      - name: purchased_at
+        description: When the customer placed the order. Raw name `order_purchase_timestamp`.
+        data_tests: [not_null]
+      - name: approved_at
+        description: When payment was approved. Null for 160 orders.
+      - name: shipped_at
+        description: When the seller handed it to the carrier. Raw name `order_delivered_carrier_date`.
+      - name: delivered_at
+        description: When the customer received it. Null if not delivered. Raw name `order_delivered_customer_date`.
+      - name: estimated_delivery_date
+        description: The delivery date promised to the customer at purchase.
+      - name: purchase_date
+        description: "{{ doc('purchase_date') }}"
+      - name: delivered_date
+        description: Date part of `delivered_at`.
+      - name: is_delivered
+        description: "{{ doc('is_delivered') }}"
+      - name: is_sale
+        description: "{{ doc('is_sale') }}"
+
+  - name: stg_order_items
+    description: >
+      **One row is:** one item in an order. Grain is two columns (order_id +
+      item_number), combined into `order_item_key`. Money cast to decimal.
+    columns:
+      - name: order_item_key
+        description: "{{ doc('order_item_key') }}"
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: Which order this item belongs to.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+      - name: item_number
+        description: "{{ doc('item_number') }}"
+      - name: product_id
+        description: "{{ doc('product_id') }}"
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+      - name: seller_id
+        description: "{{ doc('seller_id') }}"
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_sellers')
+                field: seller_id
+      - name: shipping_limit_at
+        description: Deadline for the seller to hand the item to the carrier.
+      - name: price
+        description: "{{ doc('price') }}"
+        data_tests: [not_null]
+      - name: freight_value
+        description: "{{ doc('freight_value') }}"
+      - name: item_total
+        description: "{{ doc('item_total') }}"
+
+  - name: stg_customers
+    description: >
+      **One row is:** a customer_id, which means one per ORDER, not one per person.
+      The person is `customer_unique_id`; `dim_customers` is built at that grain.
+    columns:
+      - name: customer_id
+        description: "{{ doc('customer_id') }}"
+        data_tests: [unique, not_null]
+      - name: customer_unique_id
+        description: "{{ doc('customer_unique_id') }}"
+        data_tests: [not_null]
+      - name: zip_code_prefix
+        description: "{{ doc('zip_code_prefix') }}"
+      - name: city
+        description: "{{ doc('city') }}"
+      - name: state
+        description: "{{ doc('state') }}"
+        data_tests: [not_null]
+
+  - name: stg_sellers
+    description: >
+      **One row is:** a seller. City cleaned: "city/state" junk trimmed to the city, and
+      values that aren't a city at all (a zip code, an email address) set to null.
+    columns:
+      - name: seller_id
+        description: "{{ doc('seller_id') }}"
+        data_tests: [unique, not_null]
+      - name: zip_code_prefix
+        description: "{{ doc('zip_code_prefix') }}"
+      - name: city
+        description: "{{ doc('city') }} Null for 2 sellers whose raw city wasn't a city."
+      - name: state
+        description: "{{ doc('state') }}"
+        data_tests: [not_null]
+
+  - name: stg_products
+    description: >
+      **One row is:** a product. Fixes the source's "lenght" typo. The category is still
+      Portuguese here; `dim_products` adds the English name from the seed.
+    columns:
+      - name: product_id
+        description: "{{ doc('product_id') }}"
+        data_tests: [unique, not_null]
+      - name: category_name_pt
+        description: "{{ doc('category_name_pt') }}"
+      - name: name_length
+        description: Characters in the product name. Raw name `product_name_lenght` (typo).
+      - name: description_length
+        description: Characters in the product description.
+      - name: photo_count
+        description: Number of photos on the listing.
+      - name: weight_g
+        description: Package weight in grams.
+      - name: length_cm
+        description: Package length in cm.
+      - name: height_cm
+        description: Package height in cm.
+      - name: width_cm
+        description: Package width in cm.
+      - name: volume_cm3
+        description: length × height × width, in cubic cm.
+
+  - name: stg_order_payments
+    description: "**One row is:** one payment on an order. Grain is order_id + payment_number."
+    columns:
+      - name: order_payment_key
+        description: "{{ doc('order_payment_key') }}"
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: Which order this payment is for.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+      - name: payment_number
+        description: "{{ doc('payment_number') }}"
+      - name: payment_type
+        description: "{{ doc('payment_type') }}"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [credit_card, boleto, voucher, debit_card, not_defined]
+      - name: installments
+        description: "{{ doc('installments') }}"
+      - name: amount
+        description: "{{ doc('amount') }}"
+        data_tests: [not_null]
+
+  - name: stg_order_reviews
+    description: >
+      **One row is:** an ORDER's review. The raw table isn't unique on review_id or on
+      order_id, so we *chose* a grain: one review per order, keeping the most recently
+      answered one. Blank comments become null.
+    columns:
+      - name: review_id
+        description: Survey id. Can repeat across orders (one survey covering several orders).
+      - name: order_id
+        description: The reviewed order. Unique here, by design.
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+      - name: review_score
+        description: "{{ doc('review_score') }}"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
+      - name: comment_title
+        description: Optional title, in Portuguese. Null if blank.
+      - name: comment_message
+        description: Optional comment, in Portuguese. Null if blank.
+      - name: survey_sent_at
+        description: When the survey was sent. Raw name `review_creation_date`.
+      - name: answered_at
+        description: When the customer answered. Used to pick the latest review.
+      - name: has_comment
+        description: "`true` if the customer wrote a comment."
+      - name: is_negative
+        description: "`true` for a score of 1 or 2."
+
+seeds:
+  - name: product_category_name_translation
+    description: >
+      **One row is:** a product category with its English name (71 rows). A **seed**:
+      a small CSV kept in the repo and loaded by `dbt seed`, so models reach it with
+      `ref()`. Covers 71 of the 73 categories (`pc_gamer` and
+      `portateis_cozinha_e_preparadores_de_alimentos` are missing).
+    columns:
+      - name: product_category_name
+        description: Portuguese category name. Joins to `stg_products.category_name_pt`.
+        data_tests: [unique, not_null]
+      - name: product_category_name_english
+        description: English category name.

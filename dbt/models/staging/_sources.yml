@@ -1,0 +1,165 @@
+version: 2
+
+# RAW (bronze): the Olist tables exactly as they arrived. dbt doesn't create these;
+# it only reads them. That's what makes them a `source()` and not a `ref()`.
+#
+# They live in DBT_LABS_DB.PUBLIC, loaded by the instructor, shared by everyone.
+# `name` is what we call the table in dbt. `identifier` is its real, uglier name.
+# Full column-by-column notes: docs/data_dictionary.md
+
+sources:
+  - name: olist
+    description: >
+      Raw Olist marketplace export, loaded as-is from the original CSVs. Nothing here
+      is cleaned or renamed: that's staging's job.
+    schema: public
+
+    tables:
+      - name: customers
+        identifier: olist_customers
+        description: >
+          **One row is:** a customer *as they appeared on one order* (99,441 rows).
+          A new customer_id is issued for every order; the person is customer_unique_id.
+        columns:
+          - name: customer_id
+            description: "{{ doc('customer_id') }}"
+            data_tests: [unique, not_null]
+          - name: customer_unique_id
+            description: "{{ doc('customer_unique_id') }}"
+          - name: customer_zip_code_prefix
+            description: "{{ doc('zip_code_prefix') }}"
+          - name: customer_city
+            description: City, already lowercase.
+          - name: customer_state
+            description: "{{ doc('state') }}"
+
+      - name: orders
+        identifier: olist_orders
+        description: "**One row is:** an order (99,441 rows). The center of the data model."
+        columns:
+          - name: order_id
+            description: Unique order id.
+            data_tests: [unique, not_null]
+          - name: customer_id
+            description: "{{ doc('customer_id') }}"
+          - name: order_status
+            description: "{{ doc('order_status') }}"
+          - name: order_purchase_timestamp
+            description: When the customer bought. Never null.
+          - name: order_approved_at
+            description: When payment was approved. Null for 160 orders.
+          - name: order_delivered_carrier_date
+            description: When the seller handed the order to the shipping company.
+          - name: order_delivered_customer_date
+            description: When the customer received it. Null if not delivered.
+          - name: order_estimated_delivery_date
+            description: Delivery date promised at purchase. Always midnight.
+
+      - name: order_items
+        identifier: olist_order_items
+        description: >
+          **One row is:** one item in an order (112,650 rows). Buying 2 of the same product
+          makes 2 rows; there is no quantity column.
+        columns:
+          - name: order_id
+            description: Which order.
+          - name: order_item_id
+            description: >
+              The item's POSITION in the order (1, 2, 3...), despite the name. Only
+              order_id + order_item_id together are unique.
+          - name: product_id
+            description: "{{ doc('product_id') }}"
+          - name: seller_id
+            description: "{{ doc('seller_id') }}"
+          - name: shipping_limit_date
+            description: Deadline for the seller to hand the item to the carrier.
+          - name: price
+            description: "{{ doc('price') }}"
+          - name: freight_value
+            description: "{{ doc('freight_value') }}"
+
+      - name: order_payments
+        identifier: olist_order_payments
+        description: >
+          **One row is:** one payment toward an order (103,886 rows). An order can be paid
+          in several parts.
+        columns:
+          - name: order_id
+            description: Which order.
+          - name: payment_sequential
+            description: "{{ doc('payment_number') }}"
+          - name: payment_type
+            description: "{{ doc('payment_type') }}"
+          - name: payment_installments
+            description: "{{ doc('installments') }}"
+          - name: payment_value
+            description: "{{ doc('amount') }}"
+
+      - name: order_reviews
+        identifier: olist_order_reviews
+        description: >
+          Customer satisfaction surveys (99,224 rows). **Neither review_id nor order_id is
+          unique here**: 789 surveys cover several orders, and 547 orders have several
+          reviews. Only the pair is unique.
+        columns:
+          - name: review_id
+            description: Survey id. Not unique on its own.
+          - name: order_id
+            description: Which order. Not unique on its own.
+          - name: review_score
+            description: "{{ doc('review_score') }}"
+          - name: review_comment_title
+            description: Optional title, in Portuguese. Mostly null.
+          - name: review_comment_message
+            description: Optional comment, in Portuguese. Null for about 58% of reviews.
+          - name: review_creation_date
+            description: When the survey was sent to the customer.
+          - name: review_answer_timestamp
+            description: When the customer answered.
+
+      - name: products
+        identifier: olist_products
+        description: "**One row is:** a product (32,951 rows). Product names are not included, only their length."
+        columns:
+          - name: product_id
+            description: "{{ doc('product_id') }}"
+            data_tests: [unique, not_null]
+          - name: product_category_name
+            description: "{{ doc('category_name_pt') }}"
+          - name: product_name_lenght
+            description: Characters in the product name. ("lenght" is misspelled in the source.)
+          - name: product_description_lenght
+            description: Characters in the description. Same typo.
+          - name: product_photos_qty
+            description: Number of photos on the listing.
+          - name: product_weight_g
+            description: Package weight in grams.
+          - name: product_length_cm
+            description: Package length in cm.
+          - name: product_height_cm
+            description: Package height in cm.
+          - name: product_width_cm
+            description: Package width in cm.
+
+      - name: sellers
+        identifier: olist_sellers
+        description: "**One row is:** a seller (3,095 rows)."
+        columns:
+          - name: seller_id
+            description: "{{ doc('seller_id') }}"
+            data_tests: [unique, not_null]
+          - name: seller_zip_code_prefix
+            description: "{{ doc('zip_code_prefix') }}"
+          - name: seller_city
+            description: >
+              City. **Dirty:** some say "city/state" (`auriflama/sp`), one is a zip code,
+              one is an email address.
+          - name: seller_state
+            description: "{{ doc('state') }}"
+
+      - name: geolocation
+        identifier: olist_geolocation
+        description: >
+          Zip code prefix to latitude/longitude (1,000,163 rows). **Many rows per prefix**,
+          so joining it directly multiplies rows. Not used by any model; available for
+          extra-credit map work.

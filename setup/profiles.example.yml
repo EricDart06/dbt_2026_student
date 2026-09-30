@@ -1,0 +1,23 @@
+# Copy this file to:
+#   Windows:  C:\Users\<you>\.dbt\profiles.yml
+#   Mac:      /Users/<you>/.dbt/profiles.yml
+#
+# Then change ONLY the three lines marked  <-- CHANGE ME.
+# Everything else is the same for the whole class.
+
+olist:                     # must match `profile:` in dbt/dbt_project.yml
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: VXZJSRC-AG60135
+
+      user: <replace-with-your-animal-username>              # <-- CHANGE ME
+      private_key_path: <replace-with-full-path-to-snowflake_key>  # <-- CHANGE ME
+      schema: <replace-with-lastname_firstname>              # <-- CHANGE ME
+
+      role: STUDENT
+      warehouse: STUDENT_WH
+      database: DBT_LABS_DB
+
+      threads: 4

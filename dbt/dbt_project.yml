@@ -1,0 +1,38 @@
+name: olist
+version: "0.1.0"
+# Must match the top-level key in your profiles.yml.
+profile: olist
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+# Everyone shares the STAGING and MODELED schemas, so the `schema` in your profile
+# goes on the front of each TABLE instead (see macros/generate_names.sql):
+#   schema: smith_john  ->  STAGING.SMITH_JOHN__STG_ORDERS, MODELED.SMITH_JOHN__DIM_SELLERS
+models:
+  olist:
+    staging:
+      +materialized: view
+      +schema: staging
+    modeled:
+      +materialized: table
+      +schema: modeled
+    marts:
+      +materialized: table
+      +schema: modeled    # there's no MARTS schema; marts live next to the star
+    # SQL practice: `dbt show -s kidsfeet_sandbox` runs it, `dbt build` never creates it.
+    sandbox:
+      +materialized: ephemeral
+
+seeds:
+  olist:
+    +schema: staging
+    product_category_name_translation:
+      +column_types:
+        product_category_name: varchar
+        product_category_name_english: varchar

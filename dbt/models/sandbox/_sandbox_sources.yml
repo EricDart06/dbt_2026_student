@@ -1,0 +1,17 @@
+version: 2
+
+# Practice tables for the session 2 SQL crash course. One table each, no joins needed.
+# Column notes: data/sandbox/README.md
+
+sources:
+  - name: sandbox
+    description: Small practice datasets, loaded by the instructor. Read-only.
+    schema: public
+
+    tables:
+      - name: kidsfeet
+        description: "**One row is:** one fourth-grader's feet (39 rows)."
+      - name: olympics
+        description: >
+          **One row is:** one athlete in one event at one Games (271,116 rows). In team
+          events every player gets a row, so one basketball gold counts 12 times.

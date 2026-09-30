@@ -1,0 +1,48 @@
+erDiagram
+    dim_products  ||--o{ fct_order_items : "product_id"
+    dim_sellers   ||--o{ fct_order_items : "seller_id"
+    dim_customers ||--o{ fct_order_items : "customer_unique_id"
+    dim_date      ||--o{ fct_order_items : "purchase_date"
+
+    fct_order_items {
+        varchar order_item_key PK
+        varchar order_id "DD"
+        int     item_number
+        varchar product_id FK
+        varchar seller_id FK
+        varchar customer_unique_id FK
+        date    purchase_date FK
+        varchar order_status
+        boolean is_sale
+        decimal price
+        decimal freight_value
+        decimal item_total
+    }
+    dim_products {
+        varchar product_id PK
+        varchar category_name "English"
+        varchar category_name_pt
+        int     weight_g
+        int     volume_cm3
+    }
+    dim_sellers {
+        varchar seller_id PK
+        varchar zip_code_prefix
+        varchar city
+        varchar state
+    }
+    dim_customers {
+        varchar customer_unique_id PK
+        varchar zip_code_prefix
+        varchar city
+        varchar state
+    }
+    dim_date {
+        date    date_day PK
+        int     year
+        int     quarter
+        varchar year_month
+        varchar month_name
+        varchar day_name
+        boolean is_weekend
+    }

@@ -1,0 +1,256 @@
+version: 2
+
+# MODELED (gold): the star schema. Dimensions describe things; facts record events.
+# Tests here answer: "does the star hold together?"
+#   unique + not_null on each key  -> the grain holds
+#   not_null on every fact FK      -> no fact row is missing a dimension
+#   relationships from fact to dim -> every fact row finds its dimension row
+#
+# Relationships only ever point from a fact TO A DIMENSION, never fact-to-fact.
+# order_id is a degenerate dimension (no dim table), so it's only tested for
+# not_null; tests/assert_facts_keep_every_row.sql checks no order went missing.
+
+models:
+  # ---------- dimensions ----------
+  - name: dim_customers
+    description: >
+      **One row is:** a person (`customer_unique_id`), NOT a customer_id. Building this on
+      customer_id would make every shopper look like a one-time buyer. Location comes
+      from the person's **most recent** order (39 people ordered from more than one state).
+    columns:
+      - name: customer_unique_id
+        description: "{{ doc('customer_unique_id') }}"
+        data_tests: [unique, not_null]
+      - name: zip_code_prefix
+        description: "{{ doc('zip_code_prefix') }} From the most recent order."
+      - name: city
+        description: "{{ doc('city') }} From the most recent order."
+      - name: state
+        description: "{{ doc('state') }} From the most recent order."
+
+  # ---------- ON YOUR OWN (session 5): dim_sellers ----------
+  # TODO: describe dim_sellers and test its key. Copy the shape of dim_customers above:
+  #   - a description that starts with "**One row is:** ..."
+  #   - the seller_id column, with the tests  unique  and  not_null
+  # Write it without the #, line it up exactly with dim_customers (spaces, not tabs),
+  # then run:  uv run dbt build
+
+  - name: dim_products
+    description: >
+      **One row is:** a product, with an **English** category name joined from the
+      translation seed.
+    columns:
+      - name: product_id
+        description: "{{ doc('product_id') }}"
+        data_tests: [unique, not_null]
+      - name: category_name
+        description: >
+          **Use this one for grouping.** English category name. Falls back to the
+          Portuguese name for the 2 untranslated categories, and to `unknown` for the
+          610 products with no category, so it's never null.
+        data_tests: [not_null]
+      - name: category_name_pt
+        description: "{{ doc('category_name_pt') }}"
+      - name: name_length
+        description: Characters in the product name.
+      - name: description_length
+        description: Characters in the product description.
+      - name: photo_count
+        description: Number of photos on the listing.
+      - name: weight_g
+        description: Package weight in grams.
+      - name: length_cm
+        description: Package length in cm.
+      - name: height_cm
+        description: Package height in cm.
+      - name: width_cm
+        description: Package width in cm.
+      - name: volume_cm3
+        description: Package volume in cubic cm.
+
+  - name: dim_date
+    description: >
+      **One row is:** a calendar day, 2016-01-01 to 2018-12-31. **Generated**, not loaded.
+      Join any date column to `date_day` to group by month, weekday, weekend, etc. without
+      writing date math. In `fct_orders` it plays three roles (purchase, delivered,
+      estimated).
+    columns:
+      - name: date_day
+        description: The date. Primary key.
+        data_tests: [unique, not_null]
+      - name: year
+        description: Calendar year, e.g. 2017.
+      - name: quarter
+        description: 1 to 4.
+      - name: month
+        description: 1 to 12.
+      - name: month_name
+        description: January ... December.
+      - name: year_month
+        description: "`YYYY-MM` text, e.g. `2017-11`. Sorts correctly; good for monthly charts."
+      - name: month_start
+        description: First day of the month, as a date.
+      - name: week_of_year
+        description: ISO week number, 1 to 53.
+      - name: day_of_week
+        description: 1 = Monday ... 7 = Sunday. Sort by this, not by day_name.
+      - name: day_name
+        description: Monday ... Sunday.
+      - name: is_weekend
+        description: "`true` on Saturday and Sunday."
+
+  # ---------- facts ----------
+  - name: fct_orders
+    description: >
+      **One row is:** an order. Items, payments and reviews are rolled up to one row per
+      order *before* joining, so nothing fans out. Use for order counts, delivery speed,
+      late rate and review scores. For revenue by product/seller, use `fct_order_items`.
+    columns:
+      - name: order_id
+        description: "{{ doc('order_id') }} Primary key here."
+        data_tests: [unique, not_null]
+      - name: customer_unique_id
+        description: "{{ doc('customer_unique_id') }}"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_unique_id
+      - name: order_status
+        description: "{{ doc('order_status') }}"
+      - name: is_sale
+        description: "{{ doc('is_sale') }}"
+      - name: purchase_date
+        description: "{{ doc('purchase_date') }} Role 1 of dim_date."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: delivered_date
+        description: >
+          Date the customer received the order. Role 2 of dim_date. Null until delivered;
+          relationships tests skip nulls.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: estimated_delivery_date
+        description: Date promised at purchase. Role 3 of dim_date.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: item_count
+        description: Number of items in the order. 0 for orders with no items (mostly canceled).
+      - name: items_subtotal
+        description: Sum of item prices, R$. Excludes shipping.
+      - name: freight_total
+        description: Sum of shipping charges, R$.
+      - name: order_total
+        description: items_subtotal + freight_total, R$. What the order cost.
+      - name: payment_count
+        description: Number of payments made on the order.
+      - name: payment_total
+        description: >
+          Sum of payments, R$. Differs from order_total for ~300 orders (installment
+          interest, vouchers).
+      - name: review_score
+        description: "{{ doc('review_score') }} Null if the order wasn't reviewed."
+      - name: days_to_deliver
+        description: Days from purchase to delivery. Null until delivered.
+      - name: is_late
+        description: >
+          `true` if delivered AFTER the estimated date. Null until delivered, so
+          `avg(cast(is_late as integer))` gives the late rate over delivered orders only.
+      - name: is_delivered
+        description: "{{ doc('is_delivered') }}"
+
+  - name: fct_order_items
+    description: >
+      **One row is:** an item in an order. The most detailed fact, and the one for
+      revenue: `sum(price)` by product, category, seller, customer or date. An order can
+      mix sellers (1,278 do), which is why revenue lives at this grain.
+    columns:
+      - name: order_item_key
+        description: "{{ doc('order_item_key') }}"
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: "{{ doc('order_id') }}"
+        data_tests: [not_null]
+      - name: item_number
+        description: "{{ doc('item_number') }}"
+      - name: product_id
+        description: "{{ doc('product_id') }}"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_products')
+                field: product_id
+      - name: seller_id
+        description: "{{ doc('seller_id') }}"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_sellers')
+                field: seller_id
+      - name: customer_unique_id
+        description: "{{ doc('customer_unique_id') }}"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_unique_id
+      - name: purchase_date
+        description: "{{ doc('purchase_date') }}"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: order_status
+        description: "{{ doc('order_status') }}"
+      - name: is_sale
+        description: "{{ doc('is_sale') }}"
+      - name: price
+        description: "{{ doc('price') }}"
+      - name: freight_value
+        description: "{{ doc('freight_value') }}"
+      - name: item_total
+        description: "{{ doc('item_total') }}"
+
+  - name: fct_order_payments
+    description: >
+      **One row is:** a payment on an order. Use it for *how* people pay (type,
+      installments). For revenue, use `fct_order_items`.
+    columns:
+      - name: order_payment_key
+        description: "{{ doc('order_payment_key') }}"
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: "{{ doc('order_id') }}"
+        data_tests: [not_null]
+      - name: payment_number
+        description: "{{ doc('payment_number') }}"
+      - name: purchase_date
+        description: "{{ doc('purchase_date') }}"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: payment_type
+        description: "{{ doc('payment_type') }}"
+      - name: installments
+        description: "{{ doc('installments') }}"
+      - name: amount
+        description: "{{ doc('amount') }}"

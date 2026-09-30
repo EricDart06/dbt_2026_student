@@ -1,0 +1,64 @@
+version: 2
+
+# MARTS: one table per business question, ready for a dashboard.
+# Tests here answer: "are the numbers sensible?"
+
+models:
+  - name: mart_monthly_category_sales
+    description: >
+      **Answers:** which product categories earn the most each month?
+      **One row is:** a (month, category) pair. Only orders where `is_sale` is true.
+      Its total revenue is reconciled against `fct_order_items` by a test.
+    columns:
+      - name: year_month
+        description: "`YYYY-MM` of the purchase date."
+        data_tests: [not_null]
+      - name: category_name
+        description: English product category (see `dim_products.category_name`).
+        data_tests: [not_null]
+      - name: order_count
+        description: Distinct orders containing at least one item in this category.
+      - name: item_count
+        description: Items sold in this category.
+      - name: revenue
+        description: "Sum of item prices, R$. Excludes shipping."
+        data_tests: [not_null]
+      - name: freight
+        description: Sum of shipping charges on those items, R$.
+      - name: avg_item_price
+        description: revenue / item_count, R$.
+
+  - name: mart_seller_performance
+    description: >
+      **Answers:** which sellers sell the most, deliver on time, and keep customers happy?
+      **One row is:** a seller who has sold at least one item. Built as a
+      **drill-across**: items rolled up to (seller, order) first, then joined to
+      order-level facts, so a multi-item order's review isn't counted more than once.
+    columns:
+      - name: seller_id
+        description: "{{ doc('seller_id') }}"
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_sellers')
+                field: seller_id
+      - name: city
+        description: Seller's city.
+      - name: state
+        description: "{{ doc('state') }}"
+      - name: order_count
+        description: Distinct orders the seller sold items in.
+      - name: item_count
+        description: Items sold.
+      - name: revenue
+        description: Sum of item prices, R$.
+      - name: avg_review_score
+        description: Average 1–5 review score across the seller's reviewed orders.
+      - name: avg_days_to_deliver
+        description: Average days from purchase to delivery, over delivered orders.
+      - name: late_delivery_rate
+        description: >
+          Share (0 to 1) of the seller's delivered orders that arrived after the
+          estimated date. Null if the seller has no delivered orders.

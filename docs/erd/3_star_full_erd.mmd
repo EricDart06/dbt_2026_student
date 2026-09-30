@@ -1,0 +1,79 @@
+erDiagram
+    dim_customers ||--o{ fct_orders         : "customer_unique_id"
+    dim_date      ||--o{ fct_orders         : "purchase / delivered / estimated date"
+    dim_products  ||--o{ fct_order_items    : "product_id"
+    dim_sellers   ||--o{ fct_order_items    : "seller_id"
+    dim_customers ||--o{ fct_order_items    : "customer_unique_id"
+    dim_date      ||--o{ fct_order_items    : "purchase_date"
+    dim_date      ||--o{ fct_order_payments : "purchase_date"
+
+    fct_orders {
+        varchar order_id PK "DD: degenerate dimension"
+        varchar customer_unique_id FK
+        date    purchase_date FK
+        date    delivered_date FK
+        date    estimated_delivery_date FK
+        varchar order_status
+        boolean is_sale
+        int     item_count
+        decimal items_subtotal
+        decimal freight_total
+        decimal order_total
+        int     payment_count
+        decimal payment_total
+        int     review_score
+        int     days_to_deliver
+        boolean is_late
+        boolean is_delivered
+    }
+    fct_order_items {
+        varchar order_item_key PK
+        varchar order_id "DD"
+        int     item_number
+        varchar product_id FK
+        varchar seller_id FK
+        varchar customer_unique_id FK
+        date    purchase_date FK
+        varchar order_status
+        boolean is_sale
+        decimal price
+        decimal freight_value
+        decimal item_total
+    }
+    fct_order_payments {
+        varchar order_payment_key PK
+        varchar order_id "DD"
+        int     payment_number
+        date    purchase_date FK
+        varchar payment_type
+        int     installments
+        decimal amount
+    }
+    dim_customers {
+        varchar customer_unique_id PK
+        varchar zip_code_prefix
+        varchar city
+        varchar state
+    }
+    dim_sellers {
+        varchar seller_id PK
+        varchar zip_code_prefix
+        varchar city
+        varchar state
+    }
+    dim_products {
+        varchar product_id PK
+        varchar category_name "English"
+        varchar category_name_pt
+        int     weight_g
+        int     volume_cm3
+    }
+    dim_date {
+        date    date_day PK
+        int     year
+        int     quarter
+        varchar year_month
+        varchar month_name
+        varchar day_name
+        boolean is_weekend
+    }
