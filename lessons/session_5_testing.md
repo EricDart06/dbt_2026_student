@@ -28,7 +28,8 @@ ERROR. If it doesn't, that's what the buffer time is for.
 
 | Min | What we do |
 |---|---|
-| 0–10 | **Why test:** a table can build fine and still be wrong |
+| 0–5 | **Warm-up W5:** two checks that turn out to be tests |
+| 5–10 | **Why test:** a table can build fine and still be wrong |
 | 10–20 | **See one:** the tests on `dim_customers`, plus breaking a test on purpose |
 | 20–30 | **Build one alone:** the `dim_sellers` block |
 | 30–60 | **Buffer:** catch up on sessions 2–4 |
@@ -37,7 +38,16 @@ ERROR. If it doesn't, that's what the buffer time is for.
 
 ## Step by step
 
-### 0–10 · Why test
+### 0–5 · Warm-up W5
+Open `dbt/models/sandbox/kidsfeet_sandbox.sql` and `olympics_sandbox.sql` and try this on your own before we start. Answers after 5 minutes.
+
+> (a) Is `name` unique in kidsfeet? Find every name used more than once. (b) How many olympics rows are missing a `height`?
+
+(All warm-ups: [docs/sql_practice.md, Part C](../docs/sql_practice.md#part-c--warm-ups-5-minutes-at-the-start-of-each-session).)
+
+Keep your answers open: the next 5 minutes explain that you just wrote two dbt tests.
+
+### 5–10 · Why test
 `dbt build` succeeding only means the SQL ran. It doesn't mean the answer is right. A
 test is a query that looks for bad rows: if it finds any, the test fails.
 

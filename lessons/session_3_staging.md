@@ -26,8 +26,9 @@ Pull the latest version of your fork (VS Code: **Source Control → … → Pull
 
 | Min | What we do |
 |---|---|
-| 0–10 | **Bronze vs. gold:** the same question answered from raw data and from a finished table |
-| 10–20 | **The medallion layers** + `source()` vs. `ref()` |
+| 0–5 | **Warm-up W3** in the kidsfeet sandbox |
+| 5–12 | **Bronze vs. gold:** the same question answered from raw data and from a finished table |
+| 12–20 | **The medallion layers** + `source()` vs. `ref()` |
 | 20–25 | **See one:** walk through `stg_order_reviews` |
 | 25–40 | **Build one together:** `stg_customers` |
 | 40–55 | **Build one alone:** `stg_sellers` |
@@ -37,7 +38,14 @@ Pull the latest version of your fork (VS Code: **Source Control → … → Pull
 
 ## Step by step
 
-### 0–10 · Bronze vs. gold
+### 0–5 · Warm-up W3
+Open `dbt/models/sandbox/kidsfeet_sandbox.sql` and try this on your own before we start. Answers after 5 minutes.
+
+> Show the girls' names in CAPITAL LETTERS as `kid_name`, and their foot length in inches as `length_inches` (rounded to 1 decimal), longest first.
+
+(All warm-ups: [docs/sql_practice.md, Part C](../docs/sql_practice.md#part-c--warm-ups-5-minutes-at-the-start-of-each-session).)
+
+### 5–12 · Bronze vs. gold
 Open both files in `dbt/analyses/` and run them:
 ```bash
 uv run dbt show -s q1_top_categories_bronze --limit 5
@@ -48,7 +56,7 @@ raw tables, a translation table, and the rule that canceled orders don't count. 
 query is four lines. **Which one could you explain to your manager?** That gap is what the
 layers are for.
 
-### 10–20 · The medallion layers
+### 12–20 · The medallion layers
 ```
 RAW (bronze)  ──►  STAGING (silver)  ──►  MODELED (gold)  ──►  MARTS
 loaded for you     cleaned & renamed      star schema          answers

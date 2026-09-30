@@ -21,7 +21,8 @@ fails; we fix those first.
 
 | Min | What we do |
 |---|---|
-| 0–20 | **Buffer:** everyone gets to a green `uv run dbt build` |
+| 0–5 | **Warm-up W6:** a CTE, one last time |
+| 5–20 | **Buffer:** everyone gets to a green `uv run dbt build` |
 | 20–35 | **Tour the marts** and the "which table do I use?" map |
 | 35–55 | **Hackathon warm-up:** answer a question from gold, then look at the bronze trap |
 | 55–60 | Hackathon logistics |
@@ -30,7 +31,14 @@ fails; we fix those first.
 
 ## Step by step
 
-### 0–20 · Buffer
+### 0–5 · Warm-up W6
+Open `dbt/models/sandbox/olympics_sandbox.sql` and try this on your own before we start. Answers after 5 minutes.
+
+> Using a CTE: which 5 countries won the most gold medals at the 2016 Olympics, counting **one medal per event**?
+
+(All warm-ups: [docs/sql_practice.md, Part C](../docs/sql_practice.md#part-c--warm-ups-5-minutes-at-the-start-of-each-session).)
+
+### 5–20 · Buffer
 Same order as last week: staging → dimensions → tests. Help your neighbor.
 
 ### 20–35 · Tour the marts

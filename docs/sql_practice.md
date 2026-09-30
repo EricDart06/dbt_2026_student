@@ -1,6 +1,7 @@
-# Session 2 — SQL Practice
+# SQL Practice — session 2 + warm-ups
 
-We work through these **together** in class. Open the sandbox file, write the query
+Parts A and B are session 2: we work through them **together**. Part C has a 5-minute
+warm-up for the start of sessions 3–6. Open the sandbox file, write the query
 inside the second CTE, and run it with the **Preview** button above the CTE (or
 `uv run dbt show -s kidsfeet_sandbox` in the terminal).
 
@@ -121,4 +122,23 @@ named steps.
 
 
 **O12.** **CTE.** In which year did the most countries go to their *first* Olympics?
+
+
+---
+
+## Part C — Warm-ups: 5 minutes at the start of each session
+
+So SQL doesn't get rusty: one short challenge at the start of sessions 3–6, in the
+sandbox file it names. Each one previews that day's topic.
+
+**W3. Session 3 (staging).** **kidsfeet.** Show the girls' names in CAPITAL LETTERS as `kid_name`, and their foot length in inches as `length_inches` (rounded to 1 decimal), longest first.
+
+
+**W4. Session 4 (star schema).** **olympics.** In 2016, which 5 sports had the most athletes? Show the number of athletes *and* the number of events for each.
+
+
+**W5. Session 5 (testing).** **Two checks.** (a) Is `name` unique in kidsfeet? Find every name used more than once. (b) How many olympics rows are missing a `height`?
+
+
+**W6. Session 6 (hackathon prep).** **olympics, with a CTE.** Which 5 countries won the most gold medals at the 2016 Olympics, counting **one medal per event**?
 

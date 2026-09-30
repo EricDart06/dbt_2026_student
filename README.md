@@ -119,8 +119,9 @@ Joins wait until session 4, where the first dimensions need them.
 
 | Min | Activity |
 |---|---|
-| 0–10 | **Bronze vs. gold.** Two queries answer "top 5 categories in Nov 2017" and get the same answer: `dbt/analyses/q1_top_categories_bronze.sql` (4 raw tables, a seed, casts and filters) vs. `q1_…_gold.sql` (one table, four lines). *Which one could you explain to your manager?* |
-| 10–20 | **Medallion overview** + a quick tour of the dbt folders (`staging/`, `modeled/`, `marts/`). **`source()` vs. `ref()`**: `source()` points at data dbt *didn't* create (the raw tables); `ref()` points at something dbt *did* create (a model or a seed). |
+| 0–5 | **Warm-up W3** ([SQL warm-ups](docs/sql_practice.md#part-c--warm-ups-5-minutes-at-the-start-of-each-session)): a quick kidsfeet query in the sandbox. |
+| 5–12 | **Bronze vs. gold.** Two queries answer "top 5 categories in Nov 2017" and get the same answer: `dbt/analyses/q1_top_categories_bronze.sql` (4 raw tables, a seed, casts and filters) vs. `q1_…_gold.sql` (one table, four lines). *Which one could you explain to your manager?* |
+| 12–20 | **Medallion overview** + a quick tour of the dbt folders (`staging/`, `modeled/`, `marts/`). **`source()` vs. `ref()`**: `source()` points at data dbt *didn't* create (the raw tables); `ref()` points at something dbt *did* create (a model or a seed). |
 | 20–25 | **See one:** walk through `stg_order_reviews`, where every stage has real work, including the dedup. |
 | 25–40 | **Build one together:** `stg_customers` (rename, cast, `lower`/`upper` cleaning). |
 | 40–55 | **Build one alone:** `stg_sellers`, the same shape plus cleaning junk out of the city names (`auriflama/sp`, a zip code, an email address). |
@@ -183,7 +184,7 @@ to throw away. If a stage has nothing to do, keep it and leave a comment saying 
 
 | Min | Activity |
 |---|---|
-| 0–5 | `uv run dbt build`: everything provided builds; your two TODO files ERROR and the marts that need them SKIP. |
+| 0–5 | Start `uv run dbt build` (everything provided builds; your two TODO files ERROR and the marts that need them SKIP), and do **warm-up W4** while it runs. |
 | 5–15 | **The ERD and joins.** Walk through [docs/data_dictionary.md](docs/data_dictionary.md): what one row of each table means and how they connect. `inner` vs. `left` join. Read the joins in the q1 bronze query box by box on the ERD. |
 | 15–20 | **The star schema** ([docs/star_schema.md](docs/star_schema.md)) + bronze vs. gold again: `q3_worst_sellers_bronze.sql` vs. `q3_…_gold.sql`, which reads from the mart built on `dim_sellers`. |
 | 20–30 | **See one:** walk through `dim_customers` (the `customer_id` vs. `customer_unique_id` trap). |
@@ -205,7 +206,8 @@ to throw away. If a stage has nothing to do, keep it and leave a comment saying 
 
 | Min | Activity |
 |---|---|
-| 0–10 | **Why test.** A table can build and still be wrong. `unique`, `not_null`, `accepted_values`, `relationships`. |
+| 0–5 | **Warm-up W5:** find repeated names and missing heights, which turn out to be exactly what `unique` and `not_null` tests do. |
+| 5–10 | **Why test.** A table can build and still be wrong. `unique`, `not_null`, `accepted_values`, `relationships`. |
 | 10–20 | **See one:** the tests on `dim_customers` in `_modeled.yml`. Break one on purpose and watch the build catch it. |
 | 20–30 | **Build one alone:** the `dim_sellers` block in `models/modeled/_modeled.yml`: a description ("One row is...") and `unique` + `not_null` on `seller_id`. |
 | 30–60 | **Buffer:** catch up on anything unfinished, then `uv run dbt build` for the whole project. |
@@ -218,10 +220,11 @@ to throw away. If a stage has nothing to do, keep it and leave a comment saying 
 
 **Full lesson plan: [lessons/session_6_hackathon_prep.md](lessons/session_6_hackathon_prep.md)**
 
-1. Catch up on anything unfinished.
-2. **Tour the marts:** `mart_monthly_category_sales` and `mart_seller_performance`. The
+1. **Warm-up W6:** one more CTE, the 2016 gold medal table.
+2. Catch up on anything unfinished.
+3. **Tour the marts:** `mart_monthly_category_sales` and `mart_seller_performance`. The
    second is a good grain lesson (per-item vs. per-order).
-3. **Hackathon warm-up:** the other bronze vs. gold pairs in `dbt/analyses/`
+4. **Hackathon warm-up:** the other bronze vs. gold pairs in `dbt/analyses/`
    (q2 repeat customers, q4 order value by payment type, q5 late deliveries by state,
    q6 weekday shopping). Each bronze file explains its trap at the top.
 

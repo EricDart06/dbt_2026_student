@@ -29,7 +29,7 @@ whole project that builds.
 
 | Min | What we do |
 |---|---|
-| 0–5 | **Build everything provided:** `uv run dbt build` (runs while we talk) |
+| 0–5 | **Start `uv run dbt build`**, then do **warm-up W4** while it runs |
 | 5–15 | **The ERD and joins** |
 | 15–20 | **The star schema** + bronze vs. gold, round two |
 | 20–30 | **See one:** walk through `dim_customers` |
@@ -41,13 +41,20 @@ whole project that builds.
 
 ## Step by step
 
-### 0–5 · Build everything provided
+### 0–5 · Build everything provided, then warm-up W4
 ```bash
 uv run dbt build
 ```
 It takes about 30 seconds. You'll see **ERROR** on `dim_products` and `dim_sellers` (still
 TODOs) and **SKIP** on the marts that need them. That's the lineage graph at work: dbt
 won't build anything whose inputs are broken. Everything else builds.
+
+While it runs, open `dbt/models/sandbox/olympics_sandbox.sql` and try:
+
+> In 2016, which 5 sports had the most athletes? Show the number of athletes *and* the
+> number of events for each.
+
+(All warm-ups: [docs/sql_practice.md, Part C](../docs/sql_practice.md#part-c--warm-ups-5-minutes-at-the-start-of-each-session).)
 
 ### 5–15 · The ERD and joins
 Open the ERD in [docs/data_dictionary.md](../docs/data_dictionary.md).
